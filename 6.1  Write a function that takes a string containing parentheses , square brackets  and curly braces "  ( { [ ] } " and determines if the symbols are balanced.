@@ -1,0 +1,89 @@
+#include <stdio.h>
+#include <ctype.h>
+#include <stdbool.h>
+
+#define MAX_SIZE 100
+
+char stack[MAX_SIZE];
+int top = -1;
+
+void push(char item) {
+    if (top >= MAX_SIZE - 1) {
+        printf("Stack Overflow\n");
+        return;
+    }
+    stack[++top] = item;
+}
+
+char pop() {
+    if (top == -1) {
+        printf("Stack Underflow\n");
+        return '\0';
+    }
+    return stack[top--];
+}
+
+int isOperator(char symbol) {
+    return (symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/');
+}
+
+int precedence(char symbol) {
+    switch (symbol) {
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+            return 2;
+        default:
+            return 0;
+    }
+}
+
+bool isBalanced(char *expression) {
+    char *ptr = expression;
+    while (*ptr) {
+        if (isalnum(*ptr)) {
+            printf("%c", *ptr);
+        } else if (*ptr == '(') {
+            push(*ptr);
+        } else if (*ptr == ')') {
+            char popped = pop();
+            if (popped != '(') {
+                return false;
+            }
+        } else if (isOperator(*ptr)) {
+            while (top != -1 && precedence(stack[top]) >= precedence(*ptr)) {
+                printf("%c", pop());
+            }
+            push(*ptr);
+        }
+        ptr++;
+    }
+
+    while (top != -1) {
+        char popped = pop();
+        if (popped == '(' || popped == ')') {
+            return false;
+        }
+        printf("%c", popped);
+    }
+
+    return true;
+}
+
+int main() {
+    char expression[MAX_SIZE];
+    printf("SENTHAMIZHSELVAN\n192321143\n");
+    printf("Enter infix expression: ");
+    fgets(expression, MAX_SIZE, stdin);
+
+    if (isBalanced(expression)) {
+        printf("\nExpression is balanced.\n");
+    } else {
+        printf("\nExpression is unbalanced.\n");
+    }
+
+    return 0;
+}
+C:\Users\ksent\OneDrive\Pictures\Screenshots\infix to postfix.png
