@@ -1,0 +1,81 @@
+#include <stdio.h>
+#define MAX_SIZE 100
+
+int stack[MAX_SIZE];
+int top = -1;
+
+void push(int data) {
+    if (top == MAX_SIZE - 1) {
+        printf("Stack Overflow\n");
+    } else {
+        stack[++top] = data;
+    }
+}
+
+int pop() {
+    if (top == -1) {
+        printf("Stack Underflow\n");
+        return -1;
+    } else {
+        return stack[top--];
+    }
+}
+
+int peek() {
+    if (top == -1) {
+        printf("Stack is empty\n");
+        return -1;
+    } else {
+        return stack[top];
+    }
+}
+
+void deleteMiddle() {
+    if (top == -1) {
+        printf("Stack is empty\n");
+        return;
+    }
+
+    int mid = (top + 1) / 2;  // Index of middle element (1-based)
+    int i, temp;
+
+    // Remove elements from the top until the middle element is reached
+    for (i = 0; i < mid; i++) {
+        temp = pop();
+        push(temp);  // Repush the elements back onto the stack
+    }
+
+    // Discard the middle element
+    pop();
+
+    // Repush the remaining elements in their original order
+    for (i = 0; i < mid - 1; i++) {
+        temp = pop();
+        push(temp);
+    }
+}
+
+int main() {
+printf("senthamizh\n192321143");
+    push(5);
+    push(4);
+    push(3);
+    push(2);
+    push(1);
+
+    printf("Original stack:\n");
+    for (int i = top; i >= 0; i--) {
+        printf("%d ", stack[i]);
+    }
+    printf("\n");
+
+    deleteMiddle();
+
+    printf("Stack after deleting middle element:\n");
+    for (int i = top; i >= 0; i--) {
+        printf("%d ", stack[i]);
+    }
+    printf("\n");
+
+    return 0;
+}
