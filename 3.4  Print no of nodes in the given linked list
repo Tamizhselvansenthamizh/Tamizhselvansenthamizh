@@ -37,7 +37,7 @@ void count(struct node *head){
 }
 
 int main() {
-    printf("Name: madhubalan\nReg No:192321142\n");
+    printf("Name: senthamizhselvan\nReg No:192321143\n");
     struct node *list1=NULL;
     struct node *list2=NULL;
     ins_end(&list1,1);
