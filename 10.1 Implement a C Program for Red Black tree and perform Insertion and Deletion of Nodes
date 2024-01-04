@@ -1,0 +1,272 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int data;
+    struct Node* parent;
+    struct Node* left;
+    struct Node* right;
+    int color;
+};
+
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->parent = NULL;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    newNode->color = 1;
+    return newNode;
+}
+
+void leftRotate(struct Node** root, struct Node* x) {
+    struct Node* y = x->right;
+    x->right = y->left;
+    if (y->left != NULL)
+        y->left->parent = x;
+    y->parent = x->parent;
+    if (x->parent == NULL)
+        *root = y;
+    else if (x == x->parent->left)
+        x->parent->left = y;
+    else
+        x->parent->right = y;
+    y->left = x;
+    x->parent = y;
+}
+
+void rightRotate(struct Node** root, struct Node* y) {
+    struct Node* x = y->left;
+    y->left = x->right;
+    if (x->right != NULL)
+        x->right->parent = y;
+    x->parent = y->parent;
+    if (y->parent == NULL)
+        *root = x;
+    else if (y == y->parent->left)
+        y->parent->left = x;
+    else
+        y->parent->right = x;
+    x->right = y;
+    y->parent = x;
+}
+
+void fixInsert(struct Node** root, struct Node* newNode) {
+    struct Node* parent = NULL;
+    struct Node* grandparent = NULL;
+    while ((newNode != *root) && (newNode->color != 0) && (newNode->parent->color == 1)) {
+        parent = newNode->parent;
+        grandparent = newNode->parent->parent;
+        if (parent == grandparent->left) {
+            struct Node* uncle = grandparent->right;
+            if (uncle != NULL && uncle->color == 1) {
+                grandparent->color = 1;
+                parent->color = 0;
+                uncle->color = 0;
+                newNode = grandparent;
+            } else {
+                if (newNode == parent->right) {
+                    leftRotate(root, parent);
+                    newNode = parent;
+                    parent = newNode->parent;
+                }
+                rightRotate(root, grandparent);
+                int temp = parent->color;
+                parent->color = grandparent->color;
+                grandparent->color = temp;
+                newNode = parent;
+            }
+        } else {
+            struct Node* uncle = grandparent->left;
+            if ((uncle != NULL) && (uncle->color == 1)) {
+                grandparent->color = 1;
+                parent->color = 0;
+                uncle->color = 0;
+                newNode = grandparent;
+            } else {
+                if (newNode == parent->left) {
+                    rightRotate(root, parent);
+                    newNode = parent;
+                    parent = newNode->parent;
+                }
+                leftRotate(root, grandparent);
+                int temp = parent->color;
+                parent->color = grandparent->color;
+                grandparent->color = temp;
+                newNode = parent;
+            }
+        }
+    }
+    (*root)->color = 0;
+}
+
+void insert(struct Node** root, int data) {
+    struct Node* newNode = createNode(data);
+    struct Node* current = *root;
+    struct Node* parent = NULL;
+    while (current != NULL) {
+        parent = current;
+        if (newNode->data < current->data)
+            current = current->left;
+        else
+            current = current->right;
+    }
+    newNode->parent = parent;
+    if (parent == NULL)
+        *root = newNode;
+    else if (newNode->data < parent->data)
+        parent->left = newNode;
+    else
+        parent->right = newNode;
+    fixInsert(root, newNode);
+}
+
+void inorder(struct Node* root) {
+    if (root == NULL)
+        return;
+    inorder(root->left);
+    printf("%d ", root->data);
+    inorder(root->right);
+}
+
+struct Node* minValueNode(struct Node* node) {
+    struct Node* current = node;
+    while (current->left != NULL)
+        current = current->left;
+    return current;
+}
+
+void fixDelete(struct Node** root, struct Node* x) {
+    if (x == NULL)
+        return;
+    while (x != *root && x->color == 0) {
+        if (x == x->parent->left) {
+            struct Node* sibling = x->parent->right;
+            if (sibling->color == 1) {
+                sibling->color = 0;
+                x->parent->color = 1;
+                leftRotate(root, x->parent);
+                sibling = x->parent->right;
+            }
+            if (sibling->left->color == 0 && sibling->right->color == 0) {
+                sibling->color = 1;
+                x = x->parent;
+            } else {
+                if (sibling->right->color == 0) {
+                    sibling->left->color = 0;
+                    sibling->color = 1;
+                    rightRotate(root, sibling);
+                    sibling = x->parent->right;
+                }
+                sibling->color = x->parent->color;
+                x->parent->color = 0;
+                sibling->right->color = 0;
+                leftRotate(root, x->parent);
+                x = *root;
+            }
+        } else {
+            struct Node* sibling = x->parent->left;
+            if (sibling->color == 1) {
+                sibling->color = 0;
+                x->parent->color = 1;
+                rightRotate(root, x->parent);
+                sibling = x->parent->left;
+            }
+            if (sibling->right->color == 0 && sibling->left->color == 0) {
+                sibling->color = 1;
+                x = x->parent;
+            } else {
+                if (sibling->left->color == 0) {
+                    sibling->right->color = 0;
+                    sibling->color = 1;
+                    leftRotate(root, sibling);
+                    sibling = x->parent->left;
+                }
+                sibling->color = x->parent->color;
+                x->parent->color = 0;
+                sibling->left->color = 0;
+                rightRotate(root, x->parent);
+                x = *root;
+            }
+        }
+    }
+    x->color = 0;
+}
+
+void deleteNode(struct Node** root, int data) {
+    struct Node* z = createNode(data);
+    struct Node* x, * y;
+    y = z;
+    int yOriginalColor = y->color;
+    if (z->left == NULL) {
+        x = z->right;
+        if (z->parent == NULL)
+            *root = x;
+        else if (z == z->parent->left)
+            z->parent->left = x;
+        else
+            z->parent->right = x;
+        if (x != NULL)
+            x->parent = z->parent;
+    } else if (z->right == NULL) {
+        x = z->left;
+        if (z->parent == NULL)
+            *root = x;
+        else if (z == z->parent->left)
+            z->parent->left = x;
+        else
+            z->parent->right = x;
+        if (x != NULL)
+            x->parent = z->parent;
+    } else {
+        y = minValueNode(z->right);
+        yOriginalColor = y->color;
+        x = y->right;
+        if (y->parent == z)
+            x->parent = y;
+        else {
+            if (y->right != NULL)
+                y->right->parent = y->parent;
+            y->parent->left = x;
+            y->right = z->right;
+            y->right->parent = y;
+        }
+        if (z->parent == NULL)
+            *root = y;
+        else if (z == z->parent->left)
+            z->parent->left = y;
+        else
+            z->parent->right = y;
+        y->parent = z->parent;
+        y->left = z->left;
+        y->left->parent = y;
+        y->color = z->color;
+    }
+    if (yOriginalColor == 0)
+        fixDelete(root, x);
+}
+
+int main() {
+	printf("senthamizhselvan\n192321143\n");
+    struct Node* root = NULL;
+
+    insert(&root, 10);
+    insert(&root, 20);
+    insert(&root, 30);
+    insert(&root, 40);
+    insert(&root, 50);
+    insert(&root, 60);
+    insert(&root, 70);
+
+    printf("Red Black Tree after insertion: ");
+    inorder(root);
+    printf("\n");
+
+    deleteNode(&root, 30);
+
+    printf("Red Black Tree after deletion: ");
+    inorder(root);
+    printf("\n");
+
+    return 0;
+}
